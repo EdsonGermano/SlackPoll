@@ -3,4 +3,4 @@
 set +xe
 
 git pull
-sudo docker-compose -d --force-recreate
+sudo docker-compose up -d --force-recreate
