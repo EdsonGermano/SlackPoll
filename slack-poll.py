@@ -34,7 +34,7 @@ def vote_command():
         requested = request.form["text"]
         if "help" in requested:
             return "*Help for /poll*\n\n" \
-                   "*Start a poll:* `/poll create [question] options [option1] --- [option2] --- [option3]`\n" \
+                   "*Start a poll:* `/poll create [question] options [option1] | [option2] | [option3]`\n" \
                    "*End a poll:* `/poll close` (The original poll creator must run this)\n" \
                    "*Cast a Vote:* `/poll cast [option number]`\n" \
                    "*Get number of votes cast so far:* `/poll count`"
