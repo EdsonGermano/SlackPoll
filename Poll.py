@@ -132,17 +132,17 @@ def cast(token, slack_req):
         return "That wasn't a valid voting option!"
 
     user = slack_req.form["user_name"]
-    if user in poll["votes"]:
+    if user.replace(".", "") in poll["votes"]:
         # user has already voted so remove their old vote tallies
         original_vote = poll["votes"][user]
         polls.update_one({"channel": slack_req.form['channel_id']},
                          {"$inc": {"vote_count": -1, "options."+str(original_vote)+".count": -1}})
 
     update = {"$inc": {"vote_count": 1, "options."+str(key)+".count": 1},
-              "$set": {"votes."+user: key}}
+              "$set": {"votes."+user.replace(".", ""): key}}
     if "modifiers" in poll:
         if "comments" in poll["modifiers"]:
-            update["$set"]["comments."+user] = comment
+            update["$set"]["comments."+user.replace(".", "")] = comment
 
     polls.update_one({"channel": slack_req.form['channel_id']},
                      update)
