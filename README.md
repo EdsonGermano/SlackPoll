@@ -10,7 +10,7 @@ Our requirements are written by Diana Post and issues listed follow her requests
 | *Command*   | *Description* |
 |------------|-----------------|
 | `/poll create [question] options [options]` |  Create a poll in the channel. Delineated by a pipe |
-| `/poll cast [option number]` | Cast a vote for a specific option `pipe` Add your comments | 
+| `/poll cast [option number][comment]` | Cast a vote for a specific option and comment | 
 | `/poll count` | Get the total number of votes cast so far | 
 | `/poll close` | Close a poll and get the results |
 
@@ -30,7 +30,7 @@ An example of asking the team what you should do for lunch could be like this.
 
 ### Casting a vote
 
-Casting a vote is as easy as `/poll cast [option number]`. Each person is only allowed to vote once. Voting more than once will just change your vote to whatever you voted for last.
+Casting a vote is as easy as `/poll cast [option number][comment]`. Each person is only allowed to vote once. Voting more than once will just change your vote to whatever you voted for last.
 
 --
 
