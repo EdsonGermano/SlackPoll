@@ -9,8 +9,8 @@ Our requirements are written by Diana Post and issues listed follow her requests
 
 | *Command*   | *Description* |
 |------------|-----------------|
-| `/poll create [question] options [options]` |  Create a poll in the channel. Delineated by a triple dash |
-| `/poll cast [option number]` | Cast a vote for a specific option | 
+| `/poll create [question] options [options]` |  Create a poll in the channel. Delineated by a pipe |
+| `/poll cast [option number][comment]` | Cast a vote for a specific option and comment | 
 | `/poll count` | Get the total number of votes cast so far | 
 | `/poll close` | Close a poll and get the results |
 
@@ -18,11 +18,11 @@ Our requirements are written by Diana Post and issues listed follow her requests
 
 ### Start a poll
 
-The basic syntax is `/poll create [Question] options [options]`, where the timeout is an optional field and the options are delineated by a triple dash `---`. During poll creation the person who started the poll is identified, so if you would like to start a new poll contact the other user and get them to close theirs.
+The basic syntax is `/poll create [Question] options [options]`, where the timeout is an optional field and the options are delineated by a triple dash `|`. During poll creation the person who started the poll is identified, so if you would like to start a new poll contact the other user and get them to close theirs.
 
 An example of asking the team what you should do for lunch could be like this.
 
-`/poll create What should we get for lunch? options Burgers --- Pizza --- Seafood`
+`/poll create What should we get for lunch? options Burgers | Pizza | Seafood`
 
 ![Initial Poll](screenshots/initialpoll.PNG "Initial Poll")
 
@@ -30,7 +30,7 @@ An example of asking the team what you should do for lunch could be like this.
 
 ### Casting a vote
 
-Casting a vote is as easy as `/poll cast [option number]`. Each person is only allowed to vote once. Voting more than once will just change your vote to whatever you voted for last.
+Casting a vote is as easy as `/poll cast [option number][comment]`. Each person is only allowed to vote once. Voting more than once will just change your vote to whatever you voted for last.
 
 --
 

@@ -211,7 +211,7 @@ def send_poll_start(url, poll):
     for index, option in enumerate(poll['options']):
         payload["attachments"][0]["fields"][0]["value"] += "><%s> %s\n" % (index + 1, option["name"])
 
-    payload["attachments"][0]["fields"][0]["value"] += "\n\nHow do I vote? `/poll cast [option number]`"
+    payload["attachments"][0]["fields"][0]["value"] += "\n\nHow do I vote? `/poll cast [option number][comments]`"
     print "Sending an update to slack"
     requests.post(url, data=json.dumps(payload))
 
