@@ -69,7 +69,7 @@ def create(token, slack_req):
 
     if poll is not None:
         return "There is an active poll in this channel already!\n" \
-               "Please ask <!%s> to close their poll" % poll['creator']
+               "Please ask @%s to close their poll" % poll['creator']
 
     cmd_txt = slack_req.form['text']
     modifiers = re.search("(\W+\+\w+)+$", cmd_txt)
