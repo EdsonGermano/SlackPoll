@@ -72,9 +72,13 @@ def create(token, slack_req):
                "Please ask <!%s> to close their poll" % poll['creator']
 
     cmd_txt = slack_req.form['text']
-    modifiers = re.search("(\W+\+\w+)+$", cmd_txt).group(0)
-    cmd_txt = cmd_txt[:-len(modifiers)]
-    modifiers = modifiers.replace('+', '').split()
+    modifiers = re.search("(\W+\+\w+)+$", cmd_txt)
+    if modifiers:
+        modifiers = modifiers.group(0)
+        cmd_txt = cmd_txt[:-len(modifiers)]
+        modifiers = modifiers.replace('+', '').split()
+    else:
+        modifiers = []
     question_match = re.search("create (.+) options", cmd_txt)
     if question_match:
         question = question_match.group(1)
@@ -274,12 +278,10 @@ def send_poll_close(url, poll):
 
     if "modifiers" in poll:
         if "comments" in poll["modifiers"]:
-            payload["attachments"][0]["fields"] += { "title": "comments",
-                                                     "value": "" }
             if "comments" in poll:
                 for user, comment in poll['comments'].items():
                     print "user: %s, comment: %s" % (user, comment)
-                    payload["attachments"][0]["fields"][1]["value"] += ">*%s*: %s" % (user, comment)
+                    payload["attachments"][0]["fields"][0]["value"] += "*%s*: %s\n" % (user, comment)
 
     print "Sending an update to slack"
     requests.post(url, data=json.dumps(payload))
