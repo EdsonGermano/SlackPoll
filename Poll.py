@@ -129,7 +129,7 @@ def cast(token, slack_req):
         return "Invalid vote. Please use option number."
 
     vote = int(cast.group(1))
-    comment = cast.group(2)
+    comment = cast.group(2).strip()
 
     key = vote - 1
     if key < 0 or key >= len(poll['options']):
