@@ -5,6 +5,7 @@ import requests
 from flask import Flask
 from flask import request
 import Poll
+import json
 
 app = Flask(__name__)
 
@@ -17,6 +18,7 @@ def vote_command():
     token = request.form["token"]
     requested = request.form["text"]
 
+    print json.dumps(request.form, sort_keys=True, indent=4)
     print ("%s - %s:%s - %s" % (request.form["user_name"], request.form["channel_name"], request.form["channel_id"], request.form["text"]))
 
     if "register" in requested:

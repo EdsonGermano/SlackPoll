@@ -7,7 +7,8 @@ import requests
 __author__ = 'jhroyal'
 import json
 from pymongo import MongoClient
-
+from bson import BSON
+from bson import json_util
 
 def connect_to_mongo():
     """
@@ -71,11 +72,19 @@ def create(token, slack_req):
                "Please ask @%s to close their poll" % poll['creator']
 
     cmd_txt = slack_req.form['text']
+    modifiers = re.search("(\W+\+\w+)+$", cmd_txt)
+    if modifiers:
+        modifiers = modifiers.group(0)
+        cmd_txt = cmd_txt[:-len(modifiers)]
+        modifiers = modifiers.replace('+', '').split()
+    else:
+        modifiers = []
     question_match = re.search("create (.+) options", cmd_txt)
     if question_match:
         question = question_match.group(1)
     else:
         return "Malformed Request. Use `/poll help` to find out how to form the request."
+
 
     options_match = re.search("options (.*)", cmd_txt)
     if options_match:
@@ -89,8 +98,11 @@ def create(token, slack_req):
         'votes': {},
         'options': options,
         'question': question,
-        'vote_count': 0
+        'vote_count': 0,
+        'modifiers': modifiers
     }
+    print json.dumps(poll, sort_keys=True, indent=4,default=json_util.default)
+
     polls.insert_one(poll)
     send_poll_start(polls.find_one({"token": token})['url'], poll)
     return "Creating your poll..."
@@ -110,26 +122,35 @@ def cast(token, slack_req):
 
     if poll is None:
         return "There is no active poll in this channel currently."
+    print json.dumps(poll, sort_keys=True, indent=4,default=json_util.default)
 
-    vote = re.search('([0-9]+)', slack_req.form["text"])
-    if vote:
-        vote = int(vote.group(1))
-    else:
+    cast = re.search('([0-9]+)(.*)', slack_req.form["text"])
+    if cast == None:
         return "Invalid vote. Please use option number."
+
+    vote = int(cast.group(1))
+    comment = cast.group(2).strip()
 
     key = vote - 1
     if key < 0 or key >= len(poll['options']):
         return "That wasn't a valid voting option!"
 
     user = slack_req.form["user_name"]
-    if user in poll["votes"]:
+    if user.replace(".", "") in poll["votes"]:
         # user has already voted so remove their old vote tallies
-        original_vote = poll["votes"][user]
+        original_vote = poll["votes"][user.replace(".", "")]
         polls.update_one({"channel": slack_req.form['channel_id']},
                          {"$inc": {"vote_count": -1, "options."+str(original_vote)+".count": -1}})
+
+    update = {"$inc": {"vote_count": 1, "options."+str(key)+".count": 1},
+              "$set": {"votes."+user.replace(".", ""): key}}
+    if "modifiers" in poll:
+        if "comments" in poll["modifiers"]:
+            update["$set"]["comments."+user.replace(".", "")] = comment
+
     polls.update_one({"channel": slack_req.form['channel_id']},
-                     {"$inc": {"vote_count": 1, "options."+str(key)+".count": 1},
-                      "$set": {"votes."+user: key}})
+                     update)
+
     return "Vote received. Thank you!"
 
 
@@ -147,6 +168,8 @@ def count(token, slack_req):
 
     if poll is None:
         return "There is no active poll in this channel currently."
+
+    print json.dumps(poll, sort_keys=True, indent=4,default=json_util.default)
     num_of_votes = poll["vote_count"]
 
     if num_of_votes:
@@ -170,6 +193,8 @@ def close(token, slack_req):
     poll = polls.find_one({"channel": slack_req.form['channel_id']})
     if poll is None:
         return "There is no active poll in this channel currently."
+
+    print json.dumps(poll, sort_keys=True, indent=4,default=json_util.default)
 
     if slack_req.form['user_name'] != poll["creator"]:
         return "Sorry! Only the poll creator can close the poll."
@@ -210,6 +235,9 @@ def send_poll_start(url, poll):
     }
     for index, option in enumerate(poll['options']):
         payload["attachments"][0]["fields"][0]["value"] += "><%s> %s\n" % (index + 1, option["name"])
+    if "modifiers" in poll:
+        if poll["modifiers"]:
+            payload["attachments"][0]["fields"][0]["value"] += "with %s" % ", ".join(poll['modifiers'])
 
     payload["attachments"][0]["fields"][0]["value"] += "\n\nHow do I vote? `/poll cast [option number][comments]`"
     print "Sending an update to slack"
@@ -247,6 +275,13 @@ def send_poll_close(url, poll):
     for option in sort:
         payload["attachments"][0]["fields"][0]["value"] += ">*%s* received %s votes.\n" % \
                                                            (option["name"], option["count"])
+
+    if "modifiers" in poll:
+        if "comments" in poll["modifiers"]:
+            if "comments" in poll:
+                for user, comment in poll['comments'].items():
+                    print "user: %s, comment: %s" % (user, comment)
+                    payload["attachments"][0]["fields"][0]["value"] += "*%s*: %s\n" % (user, comment)
 
     print "Sending an update to slack"
     requests.post(url, data=json.dumps(payload))
